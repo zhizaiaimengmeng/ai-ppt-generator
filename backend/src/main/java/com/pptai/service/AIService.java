@@ -14,6 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * AI 服务
+ * 集成 DeepSeek AI 模型，用于生成 PPT 大纲和内容
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -154,92 +158,6 @@ public class AIService {
         
         for (int i = 2; i <= Math.min(slideCount, 10); i++) {
             sb.append(String.format(",{\"slideNumber\":%d,\"layoutType\":\"content\",\"title\":\"第%d部分\",\"content\":{\"points\":[\"要点 1\",\"要点 2\",\"要点 3\"]}}", 
-                i, i));
-        }
-        
-        sb.append("]");
-        return sb.toString();
-    }
-    
-    /**
-     * 生成模拟幻灯片内容
-     */
-    private String generateMockSlideContent(String title) {
-        return String.format("{\"points\":[\"关于%s的要点 1\",\"关于%s的要点 2\",\"关于%s的要点 3\"]}", 
-            title, title, title);
-    }
-}
-        
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + aiApiKey);
-            
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("prompt", String.format(
-                "为以下主题生成一个 PPT 大纲，包含%d张幻灯片：%s\n" +
-                "返回 JSON 格式，包含 title(标题) 和 slides 数组，每个 slide 包含 slideNumber, layoutType, title, content",
-                slideCount, topic
-            ));
-            
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                aiApiUrl + "/generate",
-                request,
-                Map.class
-            );
-            
-            return response.getBody().get("content").toString();
-            
-        } catch (Exception e) {
-            log.error("AI 服务调用失败：{}", e.getMessage());
-            return generateMockOutline(topic, slideCount);
-        }
-    }
-    
-    /**
-     * 生成单张幻灯片内容
-     */
-    public String generateSlideContent(String topic, String slideTitle) {
-        if (aiApiUrl == null || aiApiUrl.isEmpty()) {
-            return generateMockSlideContent(slideTitle);
-        }
-        
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + aiApiKey);
-            
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("prompt", String.format(
-                "为主题'%s'的幻灯片'%s'生成详细内容，包含要点列表。返回 JSON 格式。",
-                topic, slideTitle
-            ));
-            
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                aiApiUrl + "/generate",
-                request,
-                Map.class
-            );
-            
-            return response.getBody().get("content").toString();
-            
-        } catch (Exception e) {
-            log.error("AI 服务调用失败：{}", e.getMessage());
-            return generateMockSlideContent(slideTitle);
-        }
-    }
-    
-    /**
-     * 生成模拟大纲 (用于开发测试)
-     */
-    private String generateMockOutline(String topic, int slideCount) {
-        StringBuilder sb = new StringBuilder("[");
-        sb.append(String.format("{\"slideNumber\":1,\"layoutType\":\"title\",\"title\":\"%s\",\"content\":{\"subtitle\":\"AI 生成的演示文稿\"}}", topic));
-        
-        for (int i = 2; i <= Math.min(slideCount, 10); i++) {
-            sb.append(String.format(",{\"slideNumber\":%d,\"layoutType\":\"content\",\"title\":\"第%d部分\",\"content\":{\"points\":[\"要点1\",\"要点2\",\"要点3\"]}}", 
                 i, i));
         }
         
