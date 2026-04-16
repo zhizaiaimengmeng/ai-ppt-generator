@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: ppt-ai-backend
+  
+  # MySQL Configuration - H2 for testing
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  # H2 Configuration
+  h2:
+    console:
+      enabled: true
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+  
+  # Redis - disabled for testing
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  
+  # Mail Configuration - disabled for testing
+  mail:
+    host: localhost
+    port: 1025
+
+# Server Configuration - Test
+server:
+  port: 8081
+
+# JWT Configuration - Test
+jwt:
+  secret: test-secret-key-for-testing-only-min-32-characters-long-for-security
+  expiration: 3600000  # 1 hour for testing
+  refresh-expiration: 86400000  # 24 hours
+
+# App Configuration - Test
+app:
+  frontend-url: http://localhost:3000
+
+# Logging - Test
+logging:
+  level:
+    com.pptai: DEBUG
+    org.springframework.security: DEBUG

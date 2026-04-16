@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: ppt-ai-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: ppt_ai
+      MYSQL_USER: ppt_user
+      MYSQL_PASSWORD: ppt_password
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    command: 
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --default-time-zone=+8:00
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - ppt-network
+
+  # Redis
+  redis:
+    image: redis:alpine
+    container_name: ppt-ai-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - ppt-network
+
+  # MySQL for Test
+  mysql-test:
+    image: mysql:8.0
+    container_name: ppt-ai-mysql-test
+    environment:
+      MYSQL_ROOT_PASSWORD: test123
+      MYSQL_DATABASE: ppt_ai_test
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"
+    command: 
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+    networks:
+      - ppt-network
+
+  # MailHog for Development (catches all emails in dev)
+  mailhog:
+    image: mailhog/mailhog
+    container_name: ppt-ai-mailhog
+    ports:
+      - "1025:1025"   # SMTP server
+      - "8025:8025"   # Web UI
+    networks:
+      - ppt-network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  ppt-network:
+    driver: bridge

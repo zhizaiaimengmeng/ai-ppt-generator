@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: ppt-ai-backend
+  
+  # MySQL Configuration - Test Database
+  datasource:
+    url: jdbc:mysql://localhost:3306/ppt_ai_test?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: test123
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  
+  # Redis Configuration - Test
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  
+  # Mail Configuration - Test (Mock)
+  mail:
+    host: localhost
+    port: 1025
+
+# Server Configuration - Test
+server:
+  port: 8081
+
+# JWT Configuration - Test
+jwt:
+  secret: test-secret-key-for-testing-only-min-32-characters
+  expiration: 3600000  # 1 hour for testing
+  refresh-expiration: 86400000  # 24 hours
+
+# Logging - Test
+logging:
+  level:
+    com.pptai: DEBUG
+    org.springframework.security: DEBUG
