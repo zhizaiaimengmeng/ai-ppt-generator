@@ -1,19 +1,28 @@
 package com.pptai.util;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * JWT Token 生成和验证工具类
+ */
 @Slf4j
 @Component
 public class JwtTokenProvider {
@@ -29,7 +38,7 @@ public class JwtTokenProvider {
     
     private SecretKey getSigningKey() {
         byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return new SecretKeySpec(keyBytes, 0, keyBytes.length, "HmacSHA256");
     }
     
     public String generateToken(UserDetails userDetails) {
@@ -43,12 +52,15 @@ public class JwtTokenProvider {
     }
     
     private String createToken(Map<String, Object> claims, String subject, Long expiration) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expiration);
+        
         return Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(getSigningKey())
+                .setClaims(claims)
+                .setSubject(subject)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
     
@@ -66,22 +78,38 @@ public class JwtTokenProvider {
     }
     
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getSigningKey())
+        return Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
     }
     
     private Boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        try {
+            return extractExpiration(token).before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
     }
     
+    /**
+     * 验证 Token 是否有效且匹配用户
+     */
     public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        try {
+            final String username = extractUsername(token);
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+        } catch (SignatureException | MalformedJwtException | ExpiredJwtException | 
+                UnsupportedJwtException | IllegalArgumentException e) {
+            log.error("Token 验证失败：{}", e.getMessage());
+            return false;
+        }
     }
     
+    /**
+     * 仅验证 Token 格式和有效期
+     */
     public Boolean isTokenValid(String token) {
         try {
             extractAllClaims(token);
