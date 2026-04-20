@@ -104,6 +104,7 @@ export interface Template {
   isPremium: boolean
   downloadCount: number
   favoriteCount: number
+  isFavorited?: boolean
   createdAt: string
   updatedAt: string
 }
