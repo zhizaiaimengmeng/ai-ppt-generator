@@ -112,7 +112,7 @@ const handleLogin = async () => {
         password: form.password
       })
       
-      const { token, user } = response.data
+      const { token, user } = response
       
       authStore.setToken(token)
       authStore.setUser(user)
