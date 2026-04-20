@@ -50,6 +50,16 @@ spring:
 # Server Configuration
 server:
   port: 8080
+  tomcat:
+    uri-encoding: UTF-8
+    relaxed-query-chars:
+      - '<'
+      - '>'
+      - '|'
+      - '{'
+      - '}'
+      - '['
+      - ']'
 
 # JWT Configuration
 jwt:
