@@ -37,12 +37,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String token;
         final String username;
         
-        if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
+        // 优先从 Header 获取 token，如果没有则从 query 参数获取（用于图片预览等场景）
+        if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else {
+            // 尝试从 query 参数获取 token
+            token = request.getParameter("token");
+        }
+        
+        if (!StringUtils.hasText(token)) {
             filterChain.doFilter(request, response);
             return;
         }
-        
-        token = authHeader.substring(7);
         
         try {
             username = jwtTokenProvider.extractUsername(token);
@@ -66,7 +72,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            log.error("JWT 认证失败：{}", e.getMessage());
+            log.debug("JWT 认证失败：{}", e.getMessage());
         }
         
         filterChain.doFilter(request, response);

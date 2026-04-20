@@ -43,8 +43,14 @@
       >
         <div class="template-preview">
           <img 
-            v-if="template.previewUrl"
-            :src="template.previewUrl.startsWith('data:') ? template.previewUrl : template.previewUrl" 
+            v-if="template.previewUrl && !template.previewUrl.startsWith('/api/')"
+            :src="template.previewUrl" 
+            :alt="template.name"
+            class="preview-image"
+          />
+          <img 
+            v-else-if="template.previewUrl"
+            :src="template.previewUrl + '?token=' + localStorage.getItem('token')"
             :alt="template.name"
             class="preview-image"
           />
@@ -238,13 +244,20 @@ const handleSearch = () => {
 
 const selectTemplate = async (template: Template) => {
   try {
-    // 获取模板布局预览
-    const layouts = await getTemplateLayoutsApi(template.category || 'business')
+    // 获取模板布局预览 - 使用英文 category
+    const categoryMap: Record<string, string> = {
+      '商务风': 'business',
+      '科技感': 'tech',
+      '教育风': 'education',
+      '简约风': 'minimal'
+    }
+    const layoutStyle = categoryMap[template.name] || template.category || 'business'
+    const layouts = await getTemplateLayoutsApi(layoutStyle)
     selectedTemplate.value = template
     selectedLayouts.value = layouts
     showLayoutPreview.value = true
   } catch (error: any) {
-    ElMessage.error('加载模板布局失败')
+    ElMessage.error('加载模板布局失败：' + (error.message || '未知错误'))
   }
 }
 
