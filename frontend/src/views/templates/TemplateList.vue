@@ -34,7 +34,7 @@
       </div>
     </div>
     
-    <div class="template-grid" v-if="templates.length > 0">
+    <div class="template-grid">
       <el-card
         v-for="template in templates"
         :key="template.id"
@@ -87,7 +87,7 @@
       </el-card>
     </div>
     
-    <el-empty v-else description="暂无模板" />
+    <el-empty v-if="templates.length === 0" description="暂无模板" />
     
     <div class="pagination" v-if="total > 0">
       <el-pagination
