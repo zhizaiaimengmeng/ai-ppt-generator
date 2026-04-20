@@ -43,8 +43,8 @@
       >
         <div class="template-preview">
           <img 
-            v-if="template.previewUrl && template.previewUrl.startsWith('data:image')"
-            :src="template.previewUrl" 
+            v-if="template.previewUrl"
+            :src="template.previewUrl.startsWith('data:') ? template.previewUrl : template.previewUrl" 
             :alt="template.name"
             class="preview-image"
           />

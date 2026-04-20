@@ -46,7 +46,8 @@ request.interceptors.response.use(
       return Promise.reject(new Error(res.message || '请求失败'))
     }
     
-    return res
+    // 返回 data 字段的内容，而不是整个 ApiResponse
+    return res.data
   },
   (error) => {
     console.error('响应错误:', error)
