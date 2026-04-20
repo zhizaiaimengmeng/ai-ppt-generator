@@ -142,6 +142,34 @@ public class TemplateController {
     }
     
     /**
+     * 获取模板预览图（根据模板名称动态生成）
+     */
+    @GetMapping("/preview/{name}")
+    public void getTemplatePreview(@PathVariable String name,
+                                    jakarta.servlet.http.HttpServletResponse response) {
+        // 根据模板名称获取布局
+        List<TemplateLayout> layouts = switch (name.toLowerCase()) {
+            case "商务风", "business" -> templateDesignerService.generateBusinessTemplate();
+            case "科技感", "tech", "technology" -> templateDesignerService.generateTechTemplate();
+            case "教育风", "education" -> templateDesignerService.generateEducationTemplate();
+            case "简约风", "minimal", "simple" -> templateDesignerService.generateMinimalTemplate();
+            default -> templateDesignerService.generateBusinessTemplate();
+        };
+        
+        // 生成预览图
+        String previewBase64 = templateService.generatePreviewImage(layouts);
+        
+        // 返回 PNG 图片
+        response.setContentType("image/png");
+        try {
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(previewBase64);
+            response.getOutputStream().write(imageBytes);
+        } catch (Exception e) {
+            response.setStatus(500);
+        }
+    }
+    
+    /**
      * 初始化预定义模板
      * 用于系统初始化或重新生成模板
      */

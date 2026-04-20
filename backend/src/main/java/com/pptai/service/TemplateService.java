@@ -363,6 +363,13 @@ public class TemplateService {
     }
     
     /**
+     * 生成模板预览图
+     */
+    public String generatePreviewImage(List<TemplateLayout> layouts) {
+        return templatePreviewService.generatePreview(layouts);
+    }
+    
+    /**
      * 批量生成预定义模板
      * 在项目初始化或需要时调用此方法生成所有风格的模板
      */
