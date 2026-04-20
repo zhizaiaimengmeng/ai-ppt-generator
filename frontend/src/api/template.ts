@@ -41,3 +41,16 @@ export const getTemplateStylesApi = (): Promise<ApiResponse<any[]>> => {
 export const initPresetTemplatesApi = (): Promise<ApiResponse<void>> => {
   return http.post('/templates/init-presets')
 }
+
+// 获取用户收藏的模板列表
+export const getUserFavoriteTemplatesApi = (params: {
+  page?: number
+  size?: number
+}): Promise<ApiResponse<PageResponse<Template>>> => {
+  return http.get('/templates/favorites', { params })
+}
+
+// 检查是否已收藏模板
+export const checkIfTemplateFavoritedApi = (id: number): Promise<ApiResponse<boolean>> => {
+  return http.get(`/templates/${id}/favorite/check`)
+}

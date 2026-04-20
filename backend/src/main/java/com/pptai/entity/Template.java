@@ -32,7 +32,7 @@ public class Template {
     @Column(columnDefinition = "TEXT")
     private String description;
     
-    @Column(name = "preview_url", length = 500)
+    @Column(name = "preview_url", columnDefinition = "TEXT")
     private String previewUrl;
     
     @Column(name = "template_file_url", length = 500)
@@ -67,5 +67,6 @@ public class Template {
     @ManyToMany(mappedBy = "favoriteTemplates")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @Builder.Default
     private List<User> favoritedBy = new ArrayList<>();
 }

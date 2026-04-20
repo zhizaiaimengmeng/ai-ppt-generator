@@ -79,6 +79,36 @@ public class TemplateController {
     }
     
     /**
+     * 获取用户收藏的模板列表
+     */
+    @GetMapping("/favorites")
+    public ResponseEntity<ApiResponse<PageResponse<TemplateResponse>>> getUserFavoriteTemplates(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer size) {
+        
+        UserResponse user = userService.getCurrentUser(userDetails.getUsername());
+        var pageable = org.springframework.data.domain.PageRequest.of(page - 1, size);
+        var response = templateService.getUserFavoriteTemplates(user.getId(), pageable);
+        
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+    
+    /**
+     * 检查是否已收藏模板
+     */
+    @GetMapping("/{id}/favorite/check")
+    public ResponseEntity<ApiResponse<Boolean>> checkIfTemplateFavorited(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        
+        UserResponse user = userService.getCurrentUser(userDetails.getUsername());
+        boolean isFavorited = templateService.isTemplateFavorited(id, user.getId());
+        
+        return ResponseEntity.ok(ApiResponse.success(isFavorited));
+    }
+    
+    /**
      * 获取预设模板布局
      */
     @GetMapping("/layouts/{style}")

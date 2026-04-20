@@ -290,6 +290,59 @@ public class TemplateService {
     /**
      * 将实体转换为 DTO
      */
+    /**
+     * 获取用户收藏的模板列表
+     */
+    @Transactional(readOnly = true)
+    public PageResponse<TemplateResponse> getUserFavoriteTemplates(Long userId, Pageable pageable) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND.getCode(),
+                "用户不存在"));
+        
+        List<Template> favoriteTemplates = user.getFavoriteTemplates();
+        
+        // 手动分页
+        long startLong = pageable.getOffset(); int start = (int) startLong;
+        int end = Math.min(start + pageable.getPageSize(), favoriteTemplates.size());
+        
+        if (start >= favoriteTemplates.size()) {
+            return PageResponse.<TemplateResponse>builder()
+                .records(new ArrayList<>())
+                .total((long) favoriteTemplates.size())
+                .page(pageable.getPageNumber() + 1)
+                .size(pageable.getPageSize())
+                .build();
+        }
+        
+        List<Template> pagedTemplates = favoriteTemplates.subList(start, end);
+        List<TemplateResponse> responses = pagedTemplates.stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
+        
+        return PageResponse.<TemplateResponse>builder()
+            .records(responses)
+            .total((long) favoriteTemplates.size())
+            .page(pageable.getPageNumber() + 1)
+            .size(pageable.getPageSize())
+            .build();
+    }
+    
+    /**
+     * 检查用户是否已收藏模板
+     */
+    @Transactional(readOnly = true)
+    public boolean isTemplateFavorited(Long templateId, Long userId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND.getCode(),
+                "用户不存在"));
+        
+        Template template = templateRepository.findById(templateId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.TEMPLATE_NOT_FOUND.getCode(),
+                "模板不存在"));
+        
+        return user.getFavoriteTemplates().contains(template);
+    }
+    
     private TemplateResponse toResponse(Template template) {
         return TemplateResponse.builder()
             .id(template.getId())
@@ -359,6 +412,7 @@ public class TemplateService {
     /**
      * 创建单个预定义模板
      */
+    @Transactional
     private void createPresetTemplate(String name, String category, String description, 
                                        List<TemplateLayout> layouts, Boolean isPremium) {
         // 检查模板是否已存在
@@ -367,26 +421,21 @@ public class TemplateService {
             return;
         }
         
-        try {
-            // 生成预览图
-            String previewImageBase64 = templatePreviewService.generatePreview(layouts);
-            
-            // 创建模板
-            Template template = Template.builder()
-                .name(name)
-                .category(category)
-                .description(description)
-                .previewUrl("data:image/png;base64," + previewImageBase64)
-                .isPremium(isPremium)
-                .downloadCount(0)
-                .favoriteCount(0)
-                .build();
-            
-            templateRepository.save(template);
-            log.info("创建预定义模板：{} - {}", name, category);
-            
-        } catch (Exception e) {
-            log.error("创建预定义模板 {} 失败", name, e);
-        }
+        // 生成预览图
+        String previewImageBase64 = templatePreviewService.generatePreview(layouts);
+        
+        // 创建模板（不使用 base64，只存储占位符）
+        Template template = Template.builder()
+            .name(name)
+            .category(category)
+            .description(description)
+            .previewUrl("/api/templates/preview/" + name)
+            .isPremium(isPremium)
+            .downloadCount(0)
+            .favoriteCount(0)
+            .build();
+        
+        templateRepository.save(template);
+        log.info("创建预定义模板：{} - {}", name, category);
     }
 }
