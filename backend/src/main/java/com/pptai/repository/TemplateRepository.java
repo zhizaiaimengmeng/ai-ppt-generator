@@ -25,4 +25,6 @@ public interface TemplateRepository extends JpaRepository<Template, Long> {
                                                                  Pageable pageable);
     
     List<Template> findByIsPremiumFalse();
+    
+    boolean existsByName(String name);
 }

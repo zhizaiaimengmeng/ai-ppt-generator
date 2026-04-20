@@ -189,35 +189,20 @@ public class ExportService {
     private String exportToPPTX(PPTProject project, List<Slide> slides) throws IOException {
         XMLSlideShow pptx = new XMLSlideShow();
         
-        XSLFSlideMaster master = pptx.getSlideMasters().get(0);
-        XSLFSlideLayout layout = master.getLayout(org.apache.poi.sl.usermodel.SlideLayout.TITLE_AND_CONTENT);
-        
         for (Slide slide : slides) {
-            XSLFSlide pptxSlide = pptx.createSlide(layout);
-            
-            // 设置标题
-            if (slide.getTitle() != null) {
-                pptxSlide.getHeadersFooters().setHeaderText(slide.getTitle());
-            }
-            
-            // 设置内容
-            if (slide.getContent() != null) {
-                // 这里需要解析 JSON 内容并添加到幻灯片
-                // 简化处理，只添加文本
-                var textBox = pptxSlide.createTextBox();
-                textBox.setText(slide.getTitle() != null ? slide.getTitle() : "");
+            XSLFSlide pptxSlide = pptx.createSlide();
+            if (slide.getTitle() != null && !slide.getTitle().isEmpty()) {
+                var titleBox = pptxSlide.createTextBox();
+                titleBox.setText(slide.getTitle());
             }
         }
         
-        // 保存文件
         String fileName = "ppt-" + project.getId() + "-" + System.currentTimeMillis() + ".pptx";
         Path tempFile = Files.createTempFile("ppt-", ".pptx");
         
         try (FileOutputStream out = new FileOutputStream(tempFile.toFile())) {
             pptx.write(out);
         }
-        
-        pptx.close();
         
         return "/exports/" + fileName;
     }

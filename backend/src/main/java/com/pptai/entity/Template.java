@@ -2,6 +2,7 @@ package com.pptai.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@Builder
 @Entity
 @Table(name = "templates")
 public class Template {

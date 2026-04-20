@@ -26,6 +26,9 @@ public class PPTProject {
     @Column(nullable = false, length = 500)
     private String title;
     
+    @Column(length = 200)
+    private String name;
+    
     @Column(name = "template_id")
     private Long templateId;
     

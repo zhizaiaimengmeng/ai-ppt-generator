@@ -201,7 +201,7 @@ public class TemplateService {
         
         // 应用背景样式（背景色或渐变）
         if (layout.getGradient() != null) {
-            slide.setBackgroundGradient(layout.getGradient());
+            slide.setBackgroundGradientObject(layout.getGradient());
         } else if (layout.getBackgroundColor() != null) {
             slide.setBackgroundColor(layout.getBackgroundColor());
         } else if (layout.getBackgroundImage() != null) {
@@ -210,8 +210,16 @@ public class TemplateService {
         
         // 应用元素样式
         Map<String, Object> styledContent = new HashMap<>();
-        if (slide.getContent() != null) {
-            styledContent.putAll(slide.getContent());
+        try {
+            if (slide.getContent() != null) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                Object contentObj = mapper.readValue(slide.getContent(), Object.class);
+                if (contentObj instanceof Map) {
+                    styledContent.putAll((Map<String, Object>) contentObj);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("解析幻灯片内容失败", e);
         }
         
         // 根据布局元素配置，设置内容样式
@@ -219,14 +227,18 @@ public class TemplateService {
             for (TemplateLayout.LayoutElement element : layout.getElements()) {
                 String placeholderKey = element.getPlaceholderKey();
                 if (placeholderKey != null && styledContent.containsKey(placeholderKey)) {
-                    // 将内容填充到对应元素位置
                     Object content = styledContent.get(placeholderKey);
                     styledContent.put(placeholderKey, wrapWithStyle(content, element));
                 }
             }
         }
         
-        slide.setContent(styledContent);
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            slide.setContent(mapper.writeValueAsString(styledContent));
+        } catch (Exception e) {
+            log.error("序列化幻灯片内容失败", e);
+        }
         
         log.info("应用模板样式到幻灯片：{} - {}", slide.getSlideNumber(), layout.getLayoutType());
         
