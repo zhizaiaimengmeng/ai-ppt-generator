@@ -57,11 +57,6 @@ public class User {
     @EqualsAndHashCode.Exclude
     private List<PPTProject> projects = new ArrayList<>();
     
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
-    private List<ExportRecord> exportRecords = new ArrayList<>();
-    
     @ManyToMany
     @JoinTable(
         name = "user_favorites",
