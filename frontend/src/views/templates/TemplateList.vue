@@ -244,15 +244,8 @@ const handleSearch = () => {
 
 const selectTemplate = async (template: Template) => {
   try {
-    // 获取模板布局预览 - 使用英文 category
-    const categoryMap: Record<string, string> = {
-      '商务风': 'business',
-      '科技感': 'tech',
-      '教育风': 'education',
-      '简约风': 'minimal'
-    }
-    const layoutStyle = categoryMap[template.name] || template.category || 'business'
-    const layouts = await getTemplateLayoutsApi(layoutStyle)
+    // 获取模板布局预览 - 使用 template.category（后端返回的是英文）
+    const layouts = await getTemplateLayoutsApi(template.category || 'business')
     selectedTemplate.value = template
     selectedLayouts.value = layouts
     showLayoutPreview.value = true
