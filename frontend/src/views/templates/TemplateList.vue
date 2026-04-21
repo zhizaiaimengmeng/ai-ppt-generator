@@ -50,7 +50,7 @@
           />
           <img 
             v-else-if="template.previewUrl"
-            :src="template.previewUrl + '?token=' + localStorage.getItem('token')"
+            :src="getPreviewUrl(template.previewUrl)" 
             :alt="template.name"
             class="preview-image"
           />
@@ -299,6 +299,11 @@ const getStyleColor = (styleId: string) => {
     minimal: '#333333'
   }
   return colorMap[styleId] || '#667eea'
+}
+
+const getPreviewUrl = (previewUrl: string) => {
+  const token = localStorage.getItem('token')
+  return previewUrl + '?token=' + token
 }
 
 const applyStyleFilter = () => {
