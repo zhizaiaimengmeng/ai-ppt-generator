@@ -115,11 +115,20 @@ public class TemplateController {
     public ResponseEntity<ApiResponse<List<TemplateLayout>>> getTemplateLayouts(
             @PathVariable String style) {
         
-        List<TemplateLayout> layouts = switch (style.toLowerCase()) {
+        // 中文到英文的映射
+        String normalizedStyle = switch (style.toLowerCase()) {
+            case "商务", "商务风" -> "business";
+            case "科技", "科技感", "technology" -> "tech";
+            case "教育", "教育风" -> "education";
+            case "简约", "简约风", "simple" -> "minimal";
+            default -> style.toLowerCase();
+        };
+        
+        List<TemplateLayout> layouts = switch (normalizedStyle) {
             case "business" -> templateDesignerService.generateBusinessTemplate();
-            case "tech", "technology" -> templateDesignerService.generateTechTemplate();
+            case "tech" -> templateDesignerService.generateTechTemplate();
             case "education" -> templateDesignerService.generateEducationTemplate();
-            case "minimal", "simple" -> templateDesignerService.generateMinimalTemplate();
+            case "minimal" -> templateDesignerService.generateMinimalTemplate();
             default -> throw new IllegalArgumentException("不支持的模板风格：" + style);
         };
         
