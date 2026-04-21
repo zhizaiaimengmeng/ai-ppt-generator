@@ -244,13 +244,24 @@ const handleSearch = () => {
 
 const selectTemplate = async (template: Template) => {
   try {
-    // 获取模板布局预览 - 使用 template.category（后端返回的是英文）
-    const layouts = await getTemplateLayoutsApi(template.category || 'business')
+    // 调试：打印 template 数据
+    console.log('选中的模板:', template)
+    console.log('template.category:', template.category)
+    console.log('template.name:', template.name)
+    
+    const layoutStyle = template.category || 'business'
+    console.log('请求布局 API，style:', layoutStyle)
+    
+    // 获取模板布局预览
+    const layouts = await getTemplateLayoutsApi(layoutStyle)
+    console.log('布局数据:', layouts)
+    
     selectedTemplate.value = template
     selectedLayouts.value = layouts
     showLayoutPreview.value = true
   } catch (error: any) {
     ElMessage.error('加载模板布局失败：' + (error.message || '未知错误'))
+    console.error('错误详情:', error)
   }
 }
 
